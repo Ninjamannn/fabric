@@ -1,5 +1,6 @@
 from fabric import Connection
-from fabric. import append, exists
+# from fabric import append, exists
+from patchwork.files import exists
 
 
 c = Connection(
@@ -11,9 +12,9 @@ c = Connection(
     },
 )
 
-result = c.run('w')
-print(result)
-print(c.user)
+# result = c.run('w')
+# print(result)
+# print(c.user)
 
 
 def deploy(c):
@@ -24,15 +25,19 @@ def deploy(c):
 
 
 def _get_latest_source(c):
-    repo_url = 'https://github.com/Ninjamannn/testme.git',
-    branch = 'develop',  # git branch
+    print(c)
 
-    if c.exists('.git'):
+    repo_url = 'https://github.com/Ninjamannn/testme.git'
+    branch = 'develop'  # git branch
+
+    if exists(c, '.git'):
+        print('EXIST!!!!')
         c.run('git fetch')
     else:
         c.run('git clone {REPO_URL} . -b {BRANCH}'.format(REPO_URL=repo_url, BRANCH=branch))
-    current_commit = c.local("git log -n 1 --format=%H", capture=True)
-    c.run('git reset --hard {current_commit}'.format(current_commit=current_commit))
+    current_commit = c.run("git log -n 1 --format=%H", warn=False, hide=True)
+    print(current_commit)
+    c.run("git reset --hard {current_commit}".format(current_commit=current_commit), warn=False, hide=True)
 
 
 deploy(c)
