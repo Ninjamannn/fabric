@@ -1,6 +1,7 @@
 from fabric import Connection
 # from fabric import append, exists
 from patchwork.files import exists
+from invoke.tasks import task
 
 
 c = Connection(
@@ -15,8 +16,10 @@ c = Connection(
 # result = c.run('w')
 # print(result)
 # print(c.user)
+# fab deploy
 
 
+@task(name='deploy')
 def deploy(c):
     site_folder = '/home/{user}/test_fabric/'.format(user=c.user)
     c.run('mkdir -p {site_folder}'.format(site_folder=site_folder))
@@ -31,13 +34,18 @@ def _get_latest_source(c):
     branch = 'develop'  # git branch
 
     if exists(c, '.git'):
-        print('EXIST!!!!')
+        print('git fetch')
         c.run('git fetch')
     else:
+        print('git clone - {repo_url}, branch - {branch}'.format(repo_url=repo_url, branch=branch))
         c.run('git clone {REPO_URL} . -b {BRANCH}'.format(REPO_URL=repo_url, BRANCH=branch))
-    current_commit = c.run("git log -n 1 --format=%H", warn=False, hide=True)
-    print(current_commit)
-    c.run("git reset --hard {current_commit}".format(current_commit=current_commit), warn=False, hide=True)
 
-
-deploy(c)
+    print('make shure! if you continue -> git reset --hard')
+    print('answer Y for process or N for brake')
+    ans = input('enter your choose ')
+    if ans == 'Y':
+        pass
+    else:
+        return
+    current_commit = c.run("git rev-parse HEAD")
+    c.run('git reset --hard {current_commit}'.format(current_commit=current_commit.stdout))
